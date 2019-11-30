@@ -44,7 +44,6 @@ def init():
     return service
 
 def get_latest_file():
-    print("download MOV file from google drive")
     service = init()
 
     listRequest = service.files().list(q="'16mxDL5lyZsVYDuiJqNVT3o-RI5TuMX5m' in parents and mimeType = 'video/quicktime'")
@@ -53,13 +52,19 @@ def get_latest_file():
 
     target_file = target_dir[0]
 
-    with open(this_file_path + "/last_id.txt", 'r+') as file:
+    print("new file check")
+    last_id = None
+    with open(this_file_path + "/last_id.txt", 'r') as file:
         last_id = file.read()
-        if last_id == target_file.get('id'):
-            return False
-        file.write(target_file.get('id'))
+
+    if last_id == target_file.get('id'):
+        return False
+    else:
+        with open(this_file_path + "/last_id.txt", 'w') as file:
+            file.write(target_file.get('id'))
         
     # download target file
+    print("download MOV file from google drive")
     with open(this_file_path + '/../img/target.MOV', 'wb') as file:
         request = service.files().get_media(fileId=target_file.get('id'))
         fh = io.BytesIO()
