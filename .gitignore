@@ -1,0 +1,9 @@
+img/*
+result/*
+slides/*
+testimg/*
+__pycache__/*
+.DS_Store
+__pycache__
+credentials.json
+token.pickle
