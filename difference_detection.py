@@ -4,32 +4,11 @@ import numpy as np
 from natsort import natsorted
 from tqdm import tqdm
 
-# def detection(target, compare):
-
-#     IMG_SIZE = (1000, 1000)
-
-#     target_img = cv2.resize(target, IMG_SIZE)
-
-#     bf = cv2.BFMatcher(cv2.NORM_HAMMING)
-#     # detector = cv2.ORB_create()
-#     detector = cv2.AKAZE_create()
-#     (target_kp, target_des) = detector.detectAndCompute(target_img, None)
-#     try:
-#         comparing_img = cv2.resize(compare, IMG_SIZE)
-#         (comparing_kp, comparing_des) = detector.detectAndCompute(comparing_img, None)
-#         matches = bf.match(target_des, comparing_des)
-#         dist = [m.distance for m in matches]
-#         ret = sum(dist) / len(dist)
-#     except cv2.error:
-#         ret = 100000
-
-#     return ret
-
 # target_dir: hoge/fuge/
 def save_selected_imgs(target_dir, paths):
+    print("saving slides ...")
+    for i, path in enumerate(tqdm(paths)):
 
-    for i, path in enumerate(paths):
-        print(path)
         img = cv2.imread(path)
         cv2.imwrite(target_dir + str(i) + ".png", img)
 
@@ -40,24 +19,25 @@ def background_subtranction(diffs, paths):
         if i == 0:
             continue
         back = cv2.absdiff(diffs[i], diffs[i-1])
-        print(paths[i], np.linalg.norm(back))
+        # print(paths[i], np.linalg.norm(back))
         if np.linalg.norm(back) <= 13000:
             remove_path.append(paths[i-1])
 
-    print("remove_path:", remove_path)
+    # print("remove_path:", remove_path)
     return natsorted(set(paths) ^ set(remove_path))
 
 
 def select_carefully(target_dir):
+    out_path = os.path.abspath(os.path.dirname(__file__)) + "/slides/"
     IMG_SIZE = (500, 500)
     IMG_DIR = os.path.abspath(os.path.dirname(__file__)) + '/' + target_dir + "/"
     files = natsorted(os.listdir(IMG_DIR))
     files = [file for file in files if file != ".DS_Store"]
-    print(files)
 
     selected_imgs = []
     diffs = []
-    for i in range(len(files)):
+    print("selecting slides carefully ...")
+    for i in tqdm(range(len(files))):
         if i == 0:
             continue
         else:
@@ -77,10 +57,11 @@ def select_carefully(target_dir):
                 diffs.append(diff)
 
     # スライドの切り替わりで、前後が透けてる画像の除外
+    print("remove translucent slides")
     selected_img_paths = background_subtranction(diffs, selected_imgs)
     prefixec_paths = [IMG_DIR + path for path in selected_img_paths]
-
-    save_selected_imgs(os.path.abspath(os.path.dirname(__file__)) + "/slides/", prefixec_paths)
+    save_selected_imgs(out_path, prefixec_paths)
+    return out_path
 
 def main_proccess(target_path):
 
@@ -92,6 +73,7 @@ def main_proccess(target_path):
     print(frame_sum)
     i = 0
     n = 0
+    print("first slide selection ...")
     for i in tqdm(range(int(frame_sum))):
         ret, frame = cap.read()
         if not ret:
@@ -116,6 +98,3 @@ def main_proccess(target_path):
 
     cap.release()
     cv2.destroyAllWindows()
-
-# main_proccess('img/Skyflow.MOV')
-# select_carefully('result')

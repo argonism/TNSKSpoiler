@@ -5,12 +5,15 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import io
-from googleapiclient.http import MediaIoBaseDownload
-
+from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
+import datetime
+from natsort import natsorted
+from tqdm import tqdm
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/drive']
 this_file_path = os.path.abspath(os.path.dirname(__file__))
+date_now = datetime.date.today()#今日の日付
 
 def init():
     # """
@@ -41,14 +44,12 @@ def init():
     return service
 
 def get_latest_file():
-
+    print("download MOV file from google drive")
     service = init()
 
-    listRequest = service.files().list(q="'16mxDL5lyZsVYDuiJqNVT3o-RI5TuMX5m' in parents")
+    listRequest = service.files().list(q="'16mxDL5lyZsVYDuiJqNVT3o-RI5TuMX5m' in parents and mimeType = 'video/quicktime'")
 
     target_dir = listRequest.execute().get('files')
-    for file in target_dir:
-        print("file:",file)
 
     target_file = target_dir[0]
 
@@ -72,7 +73,51 @@ def get_latest_file():
     return True
 
 def upload_imgs(imgs_dir):
+    service = init()
+    file_metadata = {
+        'name': str(date_now),
+        # TNSKSpoiler/slides/
+        'parents': ['1ZHXnYrBY-iY6RMHbhfCmVbO9YRucqQYD'],
+        'mimeType': 'application/vnd.google-apps.folder'
+    }
 
+    print("confirming google drive folder")
+
+    # すでにディレクトリが存在していれば、そこに保存
+    listRequest = service.files().list(q="name = '{0}' and '1ZHXnYrBY-iY6RMHbhfCmVbO9YRucqQYD' in parents and trashed = false".format(date_now))
+    target_dir = listRequest.execute().get('files')
+
+    # フォルダの取得 || 作成
+    target_dir_id = None
+    if target_dir:
+        target_dir_id = target_dir[0].get('id')
+    else:
+        upload_dir = service.files().create(body=file_metadata,
+                                            fields='id').execute()
+        print('Folder ID: %s' % upload_dir.get('id'))
+        target_dir_id = upload_dir.get('id')
+
+
+    files = natsorted(os.listdir(imgs_dir))
+
+    print("uploading slides")
+    for name in tqdm(files):
+        file_metadata = {'name': name, 
+                        'parents': ['{0}'.format(target_dir_id)],
+                        'mimetype': 'image/png'  }
+        media = MediaFileUpload(imgs_dir + name,
+                        mimetype='image/png')
+        file = service.files().create(body=file_metadata,
+                                            media_body=media,
+                                            fields='id').execute()
+        # print('Upload File\nFile ID: %s' % file.get('id'))
+
+    print("slides are uploaded to google drive: slide/" + str(date_now) + "/")
+
+
+# def main():
+#     service = init()
+    
 
 # if __name__ == '__main__':
 #     main()
