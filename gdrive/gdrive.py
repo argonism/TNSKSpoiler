@@ -107,6 +107,8 @@ def upload_imgs(imgs_dir):
 
     print("uploading slides")
     for name in tqdm(files):
+        if name == ".DS_Store":
+            continue
         file_metadata = {'name': name, 
                         'parents': ['{0}'.format(target_dir_id)],
                         'mimetype': 'image/png'  }
