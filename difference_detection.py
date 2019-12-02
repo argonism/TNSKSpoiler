@@ -69,6 +69,7 @@ def select_carefully(target_dir):
     return out_path
 
 def main_proccess(target_path):
+    target_path = os.path.abspath(os.path.dirname(__file__)) + "/" + target_path + "/"
     target_dir =  os.path.abspath(os.path.dirname(__file__)) + "/result/"
     shutil.rmtree(target_dir)
     os.mkdir(target_dir)
