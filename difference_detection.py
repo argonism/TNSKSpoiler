@@ -3,9 +3,14 @@ import os
 import numpy as np
 from natsort import natsorted
 from tqdm import tqdm
+import shutil
 
 # target_dir: hoge/fuge/
 def save_selected_imgs(target_dir, paths):
+    print('initialize dir slides')
+    shutil.rmtree(target_dir)
+    os.mkdir(target_dir)
+    
     print("saving slides ...")
     for i, path in enumerate(tqdm(paths)):
 
@@ -64,6 +69,9 @@ def select_carefully(target_dir):
     return out_path
 
 def main_proccess(target_path):
+    target_dir = 'result'
+    shutil.rmtree(target_dir)
+    os.mkdir(target_dir)
 
     first_time = True
     cap = cv2.VideoCapture(target_path)
