@@ -71,9 +71,9 @@ def select_carefully(target_dir):
 def main_proccess(target_path):
     target_path = os.path.abspath(os.path.dirname(__file__)) + "/" + target_path
     print(target_path)
-    target_dir =  os.path.abspath(os.path.dirname(__file__)) + "/result/"
-    shutil.rmtree(target_dir)
-    os.mkdir(target_dir)
+    out_path =  os.path.abspath(os.path.dirname(__file__)) + "/result/"
+    shutil.rmtree(out_path)
+    os.mkdir(out_path)
 
     first_time = True
     cap = cv2.VideoCapture(target_path)
@@ -101,7 +101,7 @@ def main_proccess(target_path):
         if(norm >= 14000):
         # if(norm <= 0.6):
             n += 1
-            cv2.imwrite('result/out' + str(n) + ".png", frame)
+            cv2.imwrite(out_path + 'out' + str(n) + ".png", frame)
             # print(str(n) + " saved!")
 
         pre_frame = frame
