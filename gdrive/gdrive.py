@@ -13,7 +13,7 @@ from tqdm import tqdm
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/drive']
 this_file_path = os.path.abspath(os.path.dirname(__file__))
-date_now = datetime.date.today()#今日の日付
+date_now = datetime.datetime.now()#今日の日付
 
 def init():
     # """
